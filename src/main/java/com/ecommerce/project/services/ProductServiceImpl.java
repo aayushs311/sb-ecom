@@ -11,7 +11,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ProductServiceImpl implements ProductService{
@@ -100,10 +105,37 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public ProductDTO updateProductImage(Long productId, MultipartFile image) {
+    public ProductDTO updateProductImage(Long productId, MultipartFile image) throws IOException {
         Product productImageToBeUpdated = productRepository.findById(productId)
                 .orElseThrow(() -> new MyResourceNotFoundException("Product", "productId", productId));
 
-        return null;
+        String path = "images/";
+        String fileName = uploadImage(path, image);
+
+        productImageToBeUpdated.setImage(fileName);
+
+        Product updatedProductImage = productRepository.save(productImageToBeUpdated);
+
+        return modelMapper.map(updatedProductImage, ProductDTO.class);
+    }
+
+    private String uploadImage(String path, MultipartFile imageFile) throws IOException {
+        String originalFileName = imageFile.getOriginalFilename();
+
+        String randomId = UUID.randomUUID().toString();
+
+        String imageFileName = randomId.concat(originalFileName.substring(originalFileName.lastIndexOf(".")));
+
+        String imageFilePath = path + File.separator + imageFileName;
+
+        File file = new File(path);
+
+        if(!file.exists()) {
+            file.mkdir();
+        }
+
+        Files.copy(imageFile.getInputStream(), Paths.get(imageFilePath));
+
+        return imageFileName;
     }
 }
