@@ -20,7 +20,6 @@ public class UserInfoResponse {
         this.username = username;
         this.roles = roles;
     }
-
 }
 
 
