@@ -12,7 +12,9 @@ import com.ecommerce.project.security.response.MessageResponse;
 import com.ecommerce.project.security.response.UserInfoResponse;
 import com.ecommerce.project.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,11 +33,11 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private JwtUtils jwtUtils;
-    private AuthenticationManager authenticationManager;
-    private UserRepository userRepository;
-    private PasswordEncoder encoder;
-    private RoleRepository roleRepository;
+    private final JwtUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final PasswordEncoder encoder;
+    private final RoleRepository roleRepository;
 
     public AuthController(
             JwtUtils jwtUtils,
@@ -69,16 +71,20 @@ public class AuthController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+//        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
         UserInfoResponse response = new UserInfoResponse(
-                userDetails.getId(), userDetails.getUsername(), jwtToken, roles);
+                userDetails.getId(), jwtCookie.toString(), userDetails.getUsername(), roles);
 
-        return ResponseEntity.ok(response);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+
+        return new ResponseEntity<>(response, headers, HttpStatus.OK);
     }
 
     @PostMapping("/signup")
