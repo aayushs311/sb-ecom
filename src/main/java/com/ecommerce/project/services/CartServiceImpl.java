@@ -14,10 +14,8 @@ import com.ecommerce.project.utils.AuthUtils;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -189,6 +187,27 @@ public class CartServiceImpl implements CartService{
         cart.setTotalPrice(cart.getTotalPrice() - cartItem.getProductPrice() * cartItem.getQuantity());
         cartItemRepository.deleteCartItemByProductIdAndCartId(cartId, productId);
         return "Product " + cartItem.getProduct().getProductName() + " has been deleted successfully !!!";
+    }
+
+    @Override
+    public void updateProductInCarts(Long cartId, Long productId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new MyResourceNotFoundException("Cart", "cartId", cartId));
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new MyResourceNotFoundException("Product", "productId", productId));
+
+        CartItem cartItem = cartItemRepository.findCartItemByProductIdAndCartId(cartId, productId);
+
+        if(cartItem == null) {
+            throw new APIException("Product " + product.getProductName() + " not available in the cart");
+        }
+
+        double totalCartPrice = cart.getTotalPrice() - (cartItem.getProductPrice() * cartItem.getQuantity());
+        cartItem.setProductPrice(product.getSpecialPrice());
+        cart.setTotalPrice(totalCartPrice + (cartItem.getProductPrice() * cartItem.getQuantity()));
+
+        cartItemRepository.save(cartItem);
     }
 
     private Cart createCart() {
