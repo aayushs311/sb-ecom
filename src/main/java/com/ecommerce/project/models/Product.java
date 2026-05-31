@@ -5,12 +5,18 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "products")
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
 
     @NotBlank
@@ -20,6 +26,7 @@ public class Product {
     @NotBlank
     @Size(min = 10, message = "Category name must be at least 10 characters")
     private String description;
+
     private String image;
     private Integer quantity;
     private Double price;
@@ -33,4 +40,7 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private User user;
+
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    List<CartItem> cartItems = new ArrayList<>();
 }

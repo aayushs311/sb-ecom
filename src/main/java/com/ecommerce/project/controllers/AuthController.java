@@ -89,7 +89,7 @@ public class AuthController {
         if(userRepository.existsByUserName(signupRequest.getUsername())) {
             return new ResponseEntity<>(new MessageResponse("Error: Username is already taken !!!" ), HttpStatus.BAD_REQUEST);
         }
-        if(userRepository.existsByEmail(signupRequest.getUsername())) {
+        if(userRepository.existsByEmail(signupRequest.getEmail())) {
             return new ResponseEntity<>(new MessageResponse("Error: Email is already taken !!!" ), HttpStatus.BAD_REQUEST);
         }
         User user = new User(

@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/public/categories")
+@RequestMapping("/api")
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -18,7 +18,7 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @GetMapping
+    @GetMapping("/public/categories")
     public ResponseEntity<CategoryResponse> getAllCategories(
             @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
             @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
@@ -29,13 +29,13 @@ public class CategoryController {
        return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping("/admin/categories")
     public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) {
         CategoryDTO savedCategoryDTO  = categoryService.createCategory(categoryDTO);
         return new ResponseEntity<>(savedCategoryDTO, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{categoryId}")
+    @DeleteMapping("/admin/categories/{categoryId}")
     public ResponseEntity<CategoryDTO> deleteCategory(@Valid @PathVariable Long categoryId) {
             CategoryDTO deletedCategoryDTO = categoryService.deleteCategory(categoryId);
             /*
@@ -46,7 +46,7 @@ public class CategoryController {
             return new ResponseEntity<>(deletedCategoryDTO, HttpStatus.OK);
     }
 
-    @PutMapping("/{categoryId}")
+    @PutMapping("/admin/categories/{categoryId}")
     public ResponseEntity<CategoryDTO> updateCategory(@Valid @PathVariable Long categoryId, @RequestBody CategoryDTO categoryDTO) {
             CategoryDTO savedCategoryDTO = categoryService.updateCategory(categoryId, categoryDTO);
             return new ResponseEntity<>(savedCategoryDTO, HttpStatus.OK);

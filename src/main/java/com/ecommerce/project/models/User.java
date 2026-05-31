@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "users",
         uniqueConstraints = {
@@ -69,4 +71,10 @@ public class User {
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             orphanRemoval = true)
     private Set<Product> products;
+
+    @ToString.Exclude
+    @OneToOne(mappedBy = "user",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            orphanRemoval = true)
+    private Cart cart;
 }
