@@ -37,6 +37,9 @@ public class ProductServiceImpl implements ProductService{
     @Value("${project.image}")
     private String path;
 
+    @Value("${image.base.url}")
+    private String imageBaseUrl;
+
     public ProductServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, ModelMapper modelMapper, FileService fileService, CartRepository cartRepository, CartService cartService) {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
@@ -120,7 +123,11 @@ public class ProductServiceImpl implements ProductService{
     @NonNull
     private ProductResponse getProductResponse(List<Product> products, Page<Product> productPage) {
         List<ProductDTO> productDTOS = products.stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .map(product -> {
+                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                    productDTO.setImage(constructImageUrl(productDTO.getImage()));
+                    return productDTO;
+                })
                 .toList();
         ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(productDTOS);
@@ -131,6 +138,11 @@ public class ProductServiceImpl implements ProductService{
         productResponse.setLastPage(productPage.isLast());
         return productResponse;
     }
+
+    private String constructImageUrl(String imageName) {
+        return imageBaseUrl.endsWith("/") ? imageBaseUrl + imageName : imageBaseUrl + "/" + imageName;
+    }
+
 
     @Override
     public ProductDTO updateProduct(ProductDTO productDTO, Long productId) {
