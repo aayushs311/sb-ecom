@@ -41,6 +41,9 @@ public class ProductServiceImpl implements ProductService{
     @Value("${image.base.url}")
     private String imageBaseUrl;
 
+    @Value("${image.placeholder.url}")
+    private String imagePlaceholderUrl;
+
     public ProductServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, ModelMapper modelMapper, FileService fileService, CartRepository cartRepository, CartService cartService) {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
@@ -67,7 +70,7 @@ public class ProductServiceImpl implements ProductService{
         if(!isProductPresent) {
             Product product = modelMapper.map(productDTO, Product.class);
             product.setCategory(category);
-            product.setImage("default.png");
+            product.setImage("https://placehold.co/600x400/");
             double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
             product.setSpecialPrice(specialPrice);
             Product savedProduct = productRepository.save(product);
@@ -157,7 +160,8 @@ public class ProductServiceImpl implements ProductService{
     }
 
     private String constructImageUrl(String imageName) {
-        return imageBaseUrl.endsWith("/") ? imageBaseUrl + imageName : imageBaseUrl + "/" + imageName;
+//        return imageBaseUrl.endsWith("/") ? imageBaseUrl + imageName : imageBaseUrl + "/" + imageName;
+        return imageName.equals(imagePlaceholderUrl) ? imageName : imageBaseUrl + "/" + imageName;
     }
 
 
