@@ -103,6 +103,11 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>3.0.0-M1</version> <!-- Use the latest stable 3.x version available -->
         </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>7.2.0</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -11,6 +11,8 @@ import com.ecommerce.project.payload.ProductResponse;
 import com.ecommerce.project.repositories.CartRepository;
 import com.ecommerce.project.repositories.CategoryRepository;
 import com.ecommerce.project.repositories.ProductRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jspecify.annotations.NonNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,6 +38,10 @@ public class ProductServiceImpl implements ProductService{
     private final CartRepository cartRepository;
     private final CartService cartService;
 
+    private final Jedis jedis;
+
+    private final ObjectMapper objectMapper;
+
     @Value("${project.image}")
     private String path;
 
@@ -44,17 +51,19 @@ public class ProductServiceImpl implements ProductService{
     @Value("${image.placeholder.url}")
     private String imagePlaceholderUrl;
 
-    public ProductServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, ModelMapper modelMapper, FileService fileService, CartRepository cartRepository, CartService cartService) {
+    public ProductServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, ModelMapper modelMapper, FileService fileService, CartRepository cartRepository, CartService cartService, Jedis jedis) {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.modelMapper = modelMapper;
         this.fileService = fileService;
         this.cartRepository = cartRepository;
         this.cartService = cartService;
+        this.jedis = jedis;
+        objectMapper = new ObjectMapper();
     }
 
     @Override
-    public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
+    public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) throws JsonProcessingException {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new MyResourceNotFoundException("Category", "categoryId", categoryId));
 
@@ -74,6 +83,7 @@ public class ProductServiceImpl implements ProductService{
             double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
             product.setSpecialPrice(specialPrice);
             Product savedProduct = productRepository.save(product);
+            jedis.set("product" + savedProduct.getProductId(), objectMapper.writeValueAsString(modelMapper.map(savedProduct, ProductDTO.class)));
             return modelMapper.map(savedProduct, ProductDTO.class);
         } else {
             throw new APIException("Product already exists !!!");

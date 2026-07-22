@@ -4,6 +4,7 @@ import com.ecommerce.project.config.AppConstants;
 import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponse;
 import com.ecommerce.project.services.ProductService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class ProductController {
     }
 
     @PostMapping("/admin/categories/{categoryId}/product")
-    public ResponseEntity<ProductDTO> addProduct(@Valid @RequestBody ProductDTO productDTO, @PathVariable Long categoryId) {
+    public ResponseEntity<ProductDTO> addProduct(@Valid @RequestBody ProductDTO productDTO, @PathVariable Long categoryId) throws JsonProcessingException {
         ProductDTO savedProductDTO = productService.addProduct(categoryId, productDTO);
         return new ResponseEntity<>(savedProductDTO, HttpStatus.CREATED);
     }
